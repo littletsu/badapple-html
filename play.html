@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                background-color: gray;
+            }
+            .display {
+                display: inline-flex;
+                color: transparent;
+            }
+            .p {
+                
+                width: 20px;
+                height:20px;
+                
+            }
+    
+            .b {
+                background-color: black;
+            }
+    
+            .w {
+                background-color: white;
+            }
+
+            .u {
+                background-color: red;
+            }
+            /*.break {
+                flex-basis: 100%;
+                height: 0;
+            }*/
+        </style>
+        <script defer>
+            const colors = {
+                1: 'b',
+                0: 'w',
+                2: 'g'
+            }
+            
+            let nextFrame = () => {};
+            let play = () => {};
+            fetch("http://localhost:2000/video.json").then(req => req.json()).then(json => {
+                const h = json[0].length,
+                    w = json[0][0].length,
+                    frames = json.length
+                let body = document.getElementById("body");
+                let msg = document.getElementById("msg");
+                msg.innerText = `${w}x${h} video with ${frames} frames`
+               
+                let frame = 0;
+                
+                json[0].forEach(row => {
+                    /*let breakDiv = document.createElement("div")
+                    breakDiv.className = "break"*/
+                    let display = document.createElement("div")
+                    display.className = "display"
+                    row.forEach(pixel => {
+                        let pixeldiv = document.createElement("div")
+                        pixeldiv.className = "p " + colors[pixel] || "u"
+                        
+                        display.appendChild(pixeldiv)
+                    })
+                    body.appendChild(display)
+                    //body.appendChild(breakDiv)
+                })
+                nextFrame = () => {
+                    json[frame].forEach((row,i) => {
+                        let displays = document.getElementsByClassName("display")
+                        let displayRows = []
+                        for(let element of displays) {
+                            displayRows.push(element)
+                        }
+                        row.forEach((pixel,pI) => {
+                            displayRows[i].children[pI].className = "p " + colors[pixel]
+                        })
+                        msg.innerText = `Frame: ${frame}, Frames: ${frames}, ${frame >= frames}`
+                    })
+                    
+                    if(frame >= frames-1) {
+                        frame = 0
+                    }
+                    frame = frame + 1
+                }
+                let playing = false;
+                let interval;
+                let btnPlay = document.getElementById("btnPlay")
+                let imgInterval = document.getElementById("imgInterval");
+                play = () => {
+                    if(!playing) {
+                        playing = true
+                        interval = setInterval(nextFrame, imgInterval.value)
+                        btnPlay.innerText = "Stop"
+                    } else {
+                        playing = false;
+                        clearInterval(interval)
+                        btnPlay.innerText = "Play"
+                    }
+                }
+            })
+        </script>
+    </head>
+    <body id="body">
+        <div id="msg"></div>
+        <button onclick="nextFrame()">Next frame</button><button id="btnPlay" onclick="play()">Play</button>Show a new image every: <input id="imgInterval" value="33.33" placeholder="Image interval" type="number"> ms<br>
+    </body>
+
+</html>
